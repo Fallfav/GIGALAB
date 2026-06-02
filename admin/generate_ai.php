@@ -16,7 +16,7 @@ if (isset($_POST['generate'])) {
     $jumlah = (int)$_POST['jumlah_soal'];
     
     // API Key Gemini lo
-    $api_key = "AIzaSyBbKpelbwz2qRyoCrP7xE_2ljS1uYKZCUc"; 
+    $api_key = ""; 
     
     // PERBAIKAN UTAMA: Menggunakan model produksi massal yang stabil dan pasti didukung
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $api_key;
