@@ -1,0 +1,76 @@
+LKS 2025 PROVINSI LINUX ENV DNS
+===============================
+
+Install Bind9
+ 	sudo apt update && sudo apt install bind9 bind9utils bind9-doc -y
+===============================================================================
+2.A Konfigurasi DNS (MASTER)
+ 	nano /etc/bind/named.conf.local.
+ 	// Forward Zone
+ 	zone "itnsa.id" {
+   	type master;
+ 	allow-transfer {ip-slave; ip-slave; ip-slave;};
+ 	also-notify {ip-slave; ip-slave; ip-slave;};
+   	file "/etc/bind/db.itnsa.id";
+};
+
+ 	// Reverse Zone (untuk blok IP 10.10.20.x)
+ 	zone "(reverse ip).in-addr.arpa" {
+    	type master;
+ 	allow-transfer {ip-slave; ip-slave; ip-slave;};
+ 	also-notify {ip-slave; ip-slave; ip-slave;};
+    	file "/etc/bind/db.10.10.20";
+};
+
+2.B Konfigurasi DNS (SLAVE)
+ 	nano /etc/bind/named.conf.local.
+ 	// Forward Zone
+ 	zone "utara.site" {
+ 		type slave;
+ 		file "/var/cache/bind/db.itnsa.id";
+ 		master { ip-masters; };
+ };
+ 	// Reverse Zone
+ 		zone "(reverse ip).in-addr.arpa" {
+ 		type slave;
+ 		file "/var/cache/bind/zones/db.10.10";
+ 		master { ip-masters; };
+ };
+===============================================================================
+
+3. Konfigurasi File record DNS
+ 	nano /etc/bind/db.itnsa.id
+$TTL    604800
+@       IN      SOA     itnsa.id. root.itnsa.id. (
+ 			2	;
+                        604800  ;
+                        86400   ;
+                        2419200 ;
+                        604800 );
+;
+@       IN      NS      int-srv.itnsa.id.
+@       IN      MX  10  mail.itnsa.id.
+
+int-srv  IN     A       10.10.20.10
+mail     IN     A       10.10.20.11
+www      IN     A       100.100.100.254
+vrrp     IN     A       10.10.20.100
+www.int  IN     CNAME   vrrp.itnsa.id.
+==============================================================================
+4. Konfigurasi Reverse Record
+ 	nano /etc/bind/db.10.10.20
+
+$TTL    604800
+@       IN      SOA     itnsa.id. root.itnsa.id. (
+ 			2	;
+                        604800  ;
+                        86400   ;
+                        2419200 ;
+                        604800 );
+
+
+@       IN      NS      int-srv.itnsa.id.
+
+10      IN      PTR     int-srv.itnsa.id.
+11      IN      PTR     mail.itnsa.id.
+100     IN      PTR     vrrp.itnsa.id.
